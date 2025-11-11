@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../Documents/PlatformIO/Projects/ESE"
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"mqtt_client.h": "c",
+			"nvs_flash.h": "c",
+			"sdkconfig.h": "c"
+		}
+	}
+}
