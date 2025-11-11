@@ -223,3 +223,50 @@ footer {
   margin-bottom: 10px;
   filter: drop-shadow(0 0 6px rgba(0, 255, 127, 0.5));
 }
+
+.ncp-header {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  color: white;
+  padding: 10px 0;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+.logo-area {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-area .logo {
+  width: 70px;
+  height: auto;
+}
+
+nav {
+  margin-top: 10px;
+}
+
+nav a {
+  display: inline-block;
+  margin: 0 15px;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: color 0.3s, text-shadow 0.3s;
+}
+
+nav a:hover {
+  color: var(--green);
+  text-shadow: 0 0 8px rgba(60, 255, 0, 0.7);
+}
+
+nav a.active {
+  color: var(--green);
+  text-decoration: underline;
+}
