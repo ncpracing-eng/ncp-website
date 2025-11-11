@@ -8,16 +8,24 @@
   <script defer src="fahrer.js"></script>
 </head>
 <body>
-  <header class="ncp-header">
-    <div class="logo-area">
-      <img src="images/ncp-logo.png" alt="NCP Logo" class="logo">
-      <h1>Next Curve Performance</h1>
-    </div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="events.html">Events</a>
-    </nav>
-  </header>
+ <div id="header"></div>
+<script>
+  fetch("header.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("header").innerHTML = data;
+
+      // active link hervorheben
+      const path = window.location.pathname.split("/").pop();
+      const links = document.querySelectorAll("nav a");
+      links.forEach(a => {
+        if (a.getAttribute("href") === path) {
+          a.classList.add("active");
+        }
+      });
+    });
+</script>
+
 
   <section class="page-header">
     <h2>Unsere Fahrer</h2>
