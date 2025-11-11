@@ -45,7 +45,42 @@
           </tr>
         </thead>
         <tbody>
-          <!-- wird durch fahrer.js gefüllt -->
+          <script>
+                const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw"; // aus Google Sheet URL
+                const SHEET_NAME = "Fahrer"; // Tabname
+                const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+                
+                fetch(SHEET_URL)
+                  .then(res => res.text())
+                  .then(text => {
+                    const json = JSON.parse(text.substr(47).slice(0, -2)); // Google Sheets JSON-Wrapper entfernen
+                    const rows = json.table.rows;
+                    const container = document.getElementById("members-container");
+                
+                    rows.forEach(row => {
+                      const name = row.c[0]?.v || "";
+                      const role = row.c[1]?.v || "";
+                      const carClass = row.c[2]?.v || "";
+                      const twitch = row.c[3]?.v || "";
+                
+                      // HTML-Karte bauen
+                      const card = document.createElement("div");
+                      card.classList.add("card");
+                      card.innerHTML = `
+                        <h3>${name}</h3>
+                        <p>${role}</p>
+                        <p><strong>Fahrzeugklasse:</strong> ${carClass}</p>
+                        ${twitch ? `<p>Twitch: <a href="${twitch}" target="_blank">${twitch.replace("https://twitch.tv/", "@")}</a></p>` : ""}
+                      `;
+                      container.appendChild(card);
+                    });
+                  })
+                  .catch(err => {
+                    console.error("Fehler beim Laden der Fahrerdaten:", err);
+                    document.getElementById("members-container").innerHTML = "<p>Fahrerdaten konnten nicht geladen werden 😔</p>";
+                  });
+                </script>
+
         </tbody>
       </table>
     </div>
