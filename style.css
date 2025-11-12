@@ -270,6 +270,80 @@ nav a.active {
   color: var(--green);
   text-decoration: underline;
 }
+/*--------------------------------------------------Event kacheln---------------------------------------------------------------------------------------------------------------*/
+
+/* === Event Cards Rework === */
+.event-card {
+  display: flex;
+  align-items: stretch;
+  background: #111;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0, 255, 127, 0.15);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 255, 127, 0.15);
+  min-height: 150px;
+}
+
+.event-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 25px rgba(0, 255, 127, 0.4);
+  border-color: var(--green);
+}
+
+/* Linkes Bild größer und besser integriert */
+.event-logo {
+  width: 160px;
+  height: 100%;
+  object-fit: cover;
+  background: #0f0f0f;
+  border-right: 3px solid var(--blue);
+  transition: transform 0.3s ease;
+}
+
+.event-card:hover .event-logo {
+  transform: scale(1.05);
+}
+
+/* Textbereich */
+.event-info {
+  flex: 1;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.event-info h4 {
+  margin: 0 0 8px;
+  color: var(--green);
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.event-meta {
+  font-size: 0.95rem;
+  color: #aaa;
+  margin-bottom: 6px;
+}
+
+.event-description {
+  color: #ccc;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+/* Unterschiedliche Farbstimmungen */
+.iracing .event-card {
+  border-left: 5px solid var(--blue);
+  box-shadow: 0 4px 10px rgba(0, 119, 255, 0.25);
+}
+
+.other .event-card {
+  border-left: 5px solid var(--green);
+  box-shadow: 0 4px 10px rgba(0, 255, 127, 0.25);
+}
 
 
 
