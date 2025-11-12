@@ -5,18 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fahrer | Next Curve Performance</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="js/fahrer.js"></script>
 </head>
 <body>
-  <!-- Header wird dynamisch geladen -->
+  <!-- Header -->
   <div id="header"></div>
   <script>
     fetch("header.html")
       .then(response => response.text())
       .then(data => {
         document.getElementById("header").innerHTML = data;
-
-        // aktiven Link hervorheben
         const path = window.location.pathname.split("/").pop();
         document.querySelectorAll("nav a").forEach(a => {
           if (a.getAttribute("href") === path) a.classList.add("active");
@@ -27,27 +24,13 @@
   <!-- Intro -->
   <section class="page-header">
     <h2>Unsere Fahrer</h2>
-    <p>Die Elite von Next Curve Performance – präzise, schnell, fokussiert.</p>
+    <p>Die Elite von <strong>Next Curve Performance</strong> – schnell, präzise und leidenschaftlich.</p>
   </section>
 
-  <!-- Tabelle -->
-  <section class="data-section">
-    <div class="table-card driver-card">
-      <h3 class="table-title">🏎️ Fahrerübersicht</h3>
-
-      <table id="fahrerTable" class="ncp-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Rolle</th>
-            <th>Fahrzeugklasse</th>
-            <th>Twitch</th>
-          </tr>
-        </thead>
-        <tbody>
-          <!-- Daten werden per JS eingefügt -->
-        </tbody>
-      </table>
+  <!-- Fahrer-Kacheln -->
+  <section class="driver-grid-section">
+    <div id="fahrerGrid" class="driver-grid">
+      <!-- Fahrer werden hier per JS eingefügt -->
     </div>
   </section>
 
@@ -55,42 +38,48 @@
     <p>© 2025 Next Curve Performance | SimRacing Team</p>
   </footer>
 
-  <!-- Script zum Laden aus Google Sheets -->
+  <!-- JS: Fahrer laden -->
   <script>
-    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw"; // Google Sheet ID
-    const SHEET_NAME = "Fahrer"; // Tabname
+    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+    const SHEET_NAME = "Fahrer";
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    const grid = document.querySelector("#fahrerGrid");
 
     fetch(SHEET_URL)
       .then(res => res.text())
       .then(text => {
         const json = JSON.parse(text.substr(47).slice(0, -2));
         const rows = json.table.rows;
-        const tableBody = document.querySelector("#fahrerTable tbody");
 
         rows.forEach(row => {
           const name = row.c[0]?.v || "";
           const role = row.c[1]?.v || "";
           const carClass = row.c[2]?.v || "";
           const twitch = row.c[3]?.v || "";
+          const image = row.c[4]?.v || "images/driver-placeholder.jpg";
 
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${name}</td>
-            <td>${role}</td>
-            <td><span class="status ${carClass.toLowerCase()}">${carClass}</span></td>
-            <td>${twitch ? `<a href="${twitch}" target="_blank">${twitch.replace("https://twitch.tv/", "@")}</a>` : "-"}</td>
+          const card = document.createElement("div");
+          card.classList.add("driver-card-grid");
+          card.innerHTML = `
+            <div class="driver-img">
+              <img src="${image}" alt="${name}">
+            </div>
+            <div class="driver-info">
+              <h3>${name}</h3>
+              <p class="role">${role}</p>
+              <p class="class">
+                <span class="class-badge ${carClass.toLowerCase()}">${carClass}</span>
+              </p>
+              ${twitch ? `<a class="twitch-link" href="${twitch}" target="_blank">🎥 ${twitch.replace("https://twitch.tv/", "@")}</a>` : ""}
+            </div>
           `;
-          tableBody.appendChild(tr);
+          grid.appendChild(card);
         });
-
-        if (!tableBody.hasChildNodes()) {
-          tableBody.innerHTML = `<tr><td colspan="4">Keine Fahrerdaten gefunden 😔</td></tr>`;
-        }
       })
       .catch(err => {
         console.error("Fehler beim Laden der Fahrerdaten:", err);
-        document.querySelector("#fahrerTable tbody").innerHTML = `<tr><td colspan="4">Fehler beim Laden der Daten 😔</td></tr>`;
+        grid.innerHTML = `<p>Fahrerdaten konnten nicht geladen werden 😔</p>`;
       });
   </script>
 </body>
