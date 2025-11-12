@@ -5,27 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Events | Next Curve Performance</title>
   <link rel="stylesheet" href="style.css">
-  <script defer src="js/events.js"></script>
 </head>
 <body>
   <div id="header"></div>
-<script>
-  fetch("header.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("header").innerHTML = data;
 
-      // active link hervorheben
-      const path = window.location.pathname.split("/").pop();
-      const links = document.querySelectorAll("nav a");
-      links.forEach(a => {
-        if (a.getAttribute("href") === path) {
-          a.classList.add("active");
-        }
+  <script>
+    // Header laden
+    fetch("header.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("header").innerHTML = data;
+
+        // Aktiven Menüpunkt markieren
+        const path = window.location.pathname.split("/").pop();
+        const links = document.querySelectorAll("nav a");
+        links.forEach(a => {
+          if (a.getAttribute("href") === path) {
+            a.classList.add("active");
+          }
+        });
       });
-    });
-</script>
-
+  </script>
 
   <section class="page-header">
     <h2>Rennevents</h2>
@@ -46,60 +46,7 @@
             <th>Logo</th>
           </tr>
         </thead>
-        <tbody>
-               <script>
-                    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
-                    const SHEET_NAME = "Events_iRacing";
-                    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
-                    
-                    fetch(SHEET_URL)
-                      .then(res => res.text())
-                      .then(text => {
-                        const json = JSON.parse(text.substr(47).slice(0, -2));
-                        const rows = json.table.rows;
-                    
-                        const iracingTable = document.querySelector("#iracing-events tbody");
-                        const otherTable = document.querySelector("#other-events tbody");
-                    
-                        rows.forEach(row => {
-                          const date = row.c[0]?.v || "";
-                          const event = row.c[1]?.v || "";
-                          const serie = row.c[2]?.v || "";
-                          const track = row.c[3]?.v || "";
-                          const sim = row.c[4]?.v || "";
-                    
-                          const tr = document.createElement("tr");
-                          tr.innerHTML = `
-                            <td>${date}</td>
-                            <td>${event}</td>
-                            <td>${serie}</td>
-                            <td>${track}</td>
-                            ${sim && sim !== "iRacing" ? `<td>${sim}</td>` : ""}
-                          `;
-                    
-                          if (sim.toLowerCase() === "iracing") {
-                            iracingTable.appendChild(tr);
-                          } else {
-                            otherTable.appendChild(tr);
-                          }
-                        });
-                    
-                        // Falls keine Daten vorhanden
-                        if (!iracingTable.hasChildNodes()) {
-                          iracingTable.innerHTML = `<tr><td colspan="4">Keine iRacing-Events gefunden</td></tr>`;
-                        }
-                        if (!otherTable.hasChildNodes()) {
-                          otherTable.innerHTML = `<tr><td colspan="5">Keine anderen Simulationsevents gefunden</td></tr>`;
-                        }
-                      })
-                      .catch(err => {
-                        console.error("Fehler beim Laden der Events:", err);
-                        document.querySelector("#events").innerHTML = "<p>Eventdaten konnten nicht geladen werden 😔</p>";
-                      });
-                    </script>
-
-          
-        </tbody>
+        <tbody></tbody>
       </table>
     </div>
 
@@ -124,5 +71,58 @@
   <footer>
     <p>© 2025 Next Curve Performance | SimRacing Team</p>
   </footer>
+
+  <script>
+    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+    const SHEET_NAME = "Events_iRacing";
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        const iracingTable = document.querySelector("#iracingTable tbody");
+        const otherTable = document.querySelector("#otherTable tbody");
+
+        rows.forEach(row => {
+          const date = row.c[0]?.v || "";
+          const event = row.c[1]?.v || "";
+          const serie = row.c[2]?.v || "";
+          const track = row.c[3]?.v || "";
+          const description = row.c[4]?.v || "";
+          const logo = row.c[5]?.v || "";
+          const sim = row.c[6]?.v?.toLowerCase() || "iracing"; // fallback
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${date}</td>
+            <td>${event}</td>
+            <td>${serie || sim}</td>
+            <td>${track}</td>
+            <td>${description}</td>
+            <td>${logo ? `<img src="${logo}" alt="${event}" style="height:40px;">` : ""}</td>
+          `;
+
+          if (sim === "iracing") {
+            iracingTable.appendChild(tr);
+          } else {
+            otherTable.appendChild(tr);
+          }
+        });
+
+        // Falls keine Daten vorhanden
+        if (!iracingTable.hasChildNodes()) {
+          iracingTable.innerHTML = `<tr><td colspan="6">Keine iRacing-Events gefunden</td></tr>`;
+        }
+        if (!otherTable.hasChildNodes()) {
+          otherTable.innerHTML = `<tr><td colspan="6">Keine anderen Simulationsevents gefunden</td></tr>`;
+        }
+      })
+      .catch(err => {
+        console.error("Fehler beim Laden der Events:", err);
+      });
+  </script>
 </body>
 </html>
