@@ -67,10 +67,13 @@
             </div>
             <div class="driver-info">
               <h3>${name}</h3>
-              <p class="role">${role}</p>
-              <p class="class">
-                <span class="class-badge ${carClass.toLowerCase()}">${carClass}</span>
-              </p>
+              <p class="role">${role.split(',').map(r => r.trim()).join(' / ')}</p>
+                <p class="class">
+                  ${carClass.split(',')
+                    .map(c => `<span class="class-badge ${c.trim().toLowerCase()}">${c.trim()}</span>`)
+                    .join(' ')}
+                </p>
+
               ${twitch ? `<a class="twitch-link" href="${twitch}" target="_blank">🎥 ${twitch.replace("https://twitch.tv/", "@")}</a>` : ""}
             </div>
           `;
