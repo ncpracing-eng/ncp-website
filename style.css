@@ -440,19 +440,27 @@ nav a.active {
   text-align: center;
   padding: 10px;
   font-size: 1.1em;
-  color: var(--green);
+  color: #58e857;
 }
 
 /* Offline Streams */
 .offline-box {
   position: relative;
   text-align: center;
+  display: block;
+  color: white;
+  text-decoration: none;
 }
 
 .offline-box img {
   width: 100%;
   opacity: 0.5;
   border-radius: 12px;
+  transition: opacity 0.3s ease;
+}
+
+.offline-box:hover img {
+  opacity: 0.7;
 }
 
 .offline-box h4 {
@@ -474,6 +482,6 @@ nav a.active {
   font-weight: bold;
   font-size: 1.2em;
   border-radius: 12px;
+  opacity: 0.9;
 }
-
 
