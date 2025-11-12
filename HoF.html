@@ -112,6 +112,22 @@
 
         rows.forEach(row => {
           if (!row.c) return;
+
+            // Datum sauber formatieren
+          let date = "";
+          const rawDate = row.c[2]?.v; // Spalte 3 = Datum
+          if (rawDate?.includes("Date")) {
+            const parts = rawDate.match(/Date\((\d+),(\d+),(\d+)\)/);
+            if (parts) {
+              const year = parts[1];
+              const month = String(Number(parts[2]) + 1).padStart(2, "0");
+              const day = String(parts[3]).padStart(2, "0");
+              date = `${day}.${month}.${year}`;
+            }
+          } else {
+            date = rawDate || "";
+          }
+          
           const cells = (row.c || []).map(c => c?.v ?? "");
           const tr = document.createElement("tr");
           tr.innerHTML = `
