@@ -273,6 +273,48 @@ nav a.active {
 
 
 /*--------------------------------------------------Fahrer kacheln---------------------------------------------------------------------------------------------------------------*/
+/* Überschriftbanner über Kacheln*/
+/* Fahrer-Überschrift-Banner */
+.page-header {
+  text-align: center;
+  margin: 2rem 0 4rem 0;
+  padding: 2rem 1rem;
+  background: linear-gradient(135deg, #00ff7f, #0077ff); /* NCP-Farben */
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4); /* leichter Schatten */
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-header h2 {
+  font-size: 3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.5);
+}
+
+.page-header p {
+  font-size: 1.3rem;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
+
+/* optional: leichtes animiertes Leuchten */
+.page-header h2 {
+  animation: glow 3s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { text-shadow: 2px 2px 8px rgba(0,0,0,0.5), 0 0 5px rgba(255,255,255,0.3); }
+  to { text-shadow: 2px 2px 12px rgba(0,0,0,0.7), 0 0 20px rgba(255,255,255,0.5); }
+}
+
+
+
 /* === Fahrer Grid Layout === */
 .driver-grid-section {
   max-width: 1200px;
