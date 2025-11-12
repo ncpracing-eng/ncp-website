@@ -95,14 +95,17 @@
 
           const card = document.createElement("div");
           card.classList.add("event-card");
+          card.classList.add(sim === "iracing" ? "iracing" : "other"); // Kategorie-Klasse
+          
           card.innerHTML = `
-            <img src="${logo || 'https://via.placeholder.com/160x120?text=Event'}" alt="${event}" class="event-logo">
+            <img src="${logo || 'https://via.placeholder.com/140x100?text=Event'}" alt="${event}" class="event-logo">
             <div class="event-info">
               <h4>${event}</h4>
               <p class="event-meta">${date} • ${serie} • ${track}</p>
               <p class="event-description">${description}</p>
             </div>
-          `;
+            `;
+
 
           if (sim === "iracing") {
             card.classList.add("iracing");
