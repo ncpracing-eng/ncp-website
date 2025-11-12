@@ -272,78 +272,55 @@ nav a.active {
 }
 /*--------------------------------------------------Event kacheln---------------------------------------------------------------------------------------------------------------*/
 
-/* === Event Cards Rework === */
+.event-list {
+  display: flex;
+  flex-wrap: wrap;          /* Karten nebeneinander */
+  gap: 20px;                /* Abstand zwischen Karten */
+  justify-content: center;  /* zentriert */
+}
+
 .event-card {
   display: flex;
-  align-items: stretch;
-  background: #111;
-  border-radius: 16px;
-  box-shadow: 0 4px 12px rgba(0, 255, 127, 0.15);
-  overflow: hidden;
-  transition: all 0.3s ease;
-  border: 1px solid rgba(0, 255, 127, 0.15);
-  min-height: 150px;
+  align-items: flex-start;
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 15px;
+  width: 100%;
+  max-width: 450px;         /* jede Karte max 450px breit */
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
 }
 
 .event-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 0 25px rgba(0, 255, 127, 0.4);
-  border-color: var(--green);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
 }
 
-/* Linkes Bild größer und besser integriert */
 .event-logo {
-  width: 160px;
-  height: 100%;
+  width: 140px;             /* Bild größer */
+  height: 100px;
   object-fit: cover;
-  background: #0f0f0f;
-  border-right: 3px solid var(--blue);
-  transition: transform 0.3s ease;
-}
-
-.event-card:hover .event-logo {
-  transform: scale(1.05);
-}
-
-/* Textbereich */
-.event-info {
-  flex: 1;
-  padding: 1rem 1.5rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+  border-radius: 8px;
+  margin-right: 15px;
+  flex-shrink: 0;
 }
 
 .event-info h4 {
-  margin: 0 0 8px;
-  color: var(--green);
-  font-size: 1.3rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  margin: 0 0 5px 0;
+  color: #00ff7f;           /* Titelfarbe */
 }
 
 .event-meta {
-  font-size: 0.95rem;
-  color: #aaa;
-  margin-bottom: 6px;
+  font-size: 0.9rem;
+  color: #bbb;
 }
 
 .event-description {
-  color: #ccc;
-  font-size: 0.95rem;
-  line-height: 1.4;
+  font-size: 0.85rem;
+  color: #ddd;
+  margin-top: 5px;
 }
 
-/* Unterschiedliche Farbstimmungen */
-.iracing .event-card {
-  border-left: 5px solid var(--blue);
-  box-shadow: 0 4px 10px rgba(0, 119, 255, 0.25);
-}
-
-.other .event-card {
-  border-left: 5px solid var(--green);
-  box-shadow: 0 4px 10px rgba(0, 255, 127, 0.25);
-}
 
 
 
