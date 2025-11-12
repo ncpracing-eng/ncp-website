@@ -186,59 +186,32 @@
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
     fetch(SHEET_URL)
-      .then(res => res.text())
-      .then(text => {
-        const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows;
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substr(47).slice(0, -2));
+    const rows = json.table.rows;
 
-        // Erste Zeile (Header) überspringen
-        rows.slice(1).forEach(row => {
-          const name = row.c[0]?.v || "";
-          const twitchUser = row.c[1]?.v?.trim() || "";
+    // Erste Zeile (Header) überspringen
+    rows.slice(1).forEach(row => {
+      const name = row.c[0]?.v || "";
+      const twitchUser = row.c[1]?.v?.trim() || "";
+      if (!twitchUser) return;
 
-          if (!twitchUser) return;
-
-          const img = new Image();
-          img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
-
-          img.onload = () => {
-            // Wenn das Bild erfolgreich lädt → vermutlich live
+      // Twitch oEmbed check (ohne Token)
+      fetch(`https://embed.twitch.tv/oembed?url=https://www.twitch.tv/${twitchUser}`)
+        .then(response => {
+          if (response.ok) {
             addStream(name, twitchUser, true);
-          };
-
-          img.onerror = () => {
+          } else {
             addStream(name, twitchUser, false);
-          };
+          }
+        })
+        .catch(() => {
+          addStream(name, twitchUser, false);
         });
-      })
-      .catch(err => console.error("Fehler beim Laden der Stream-Daten:", err));
-
-    function addStream(name, twitchUser, isLive) {
-      const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
-      const card = document.createElement("div");
-      card.classList.add("stream-card");
-      if (!isLive) card.classList.add("offline");
-
-      if (isLive) {
-        card.innerHTML = `
-          <div class="stream-video">
-            <iframe
-              src="https://player.twitch.tv/?channel=${twitchUser}&parent=${location.hostname}"
-              allow="autoplay; fullscreen"
-              frameborder="0">
-            </iframe>
-          </div>
-          <div class="stream-info">
-            <h3>${name}</h3>
-          </div>`;
-      } else {
-        card.innerHTML = `
-          <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
-            <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg" alt="${name}">
-            <div class="offline-overlay">Offline</div>
-            <h4>${name}</h4>
-          </a>`;
-      }
+    });
+  })
+  .catch(err => console.error("Fehler beim Laden der Stream-Daten:", err));
 
       container.appendChild(card);
     }
