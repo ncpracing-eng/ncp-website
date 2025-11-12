@@ -58,13 +58,13 @@
         const json = JSON.parse(text.substr(47).slice(0, -2));
         const rows = json.table.rows;
 
-        rows.forEach(row => {
+        rows.slice(1).forEach(row => {  // <- slice(1) überspringt die erste Zeile
           const name = row.c[0]?.v || "";
           const role = row.c[1]?.v || "";
           const carClass = row.c[2]?.v || "";
           const twitch = row.c[3]?.v || "";
           const image = row.c[4]?.v || "images/driver-placeholder.jpg";
-
+        
           const card = document.createElement("div");
           card.classList.add("driver-card-grid");
           card.innerHTML = `
@@ -74,12 +74,11 @@
             <div class="driver-info">
               <h3>${name}</h3>
               <p class="role">${role.split(',').map(r => r.trim()).join(' / ')}</p>
-                <p class="class">
-                  ${carClass.split(',')
-                    .map(c => `<span class="class-badge ${c.trim().toLowerCase()}">${c.trim()}</span>`)
-                    .join(' ')}
-                </p>
-
+              <p class="class">
+                ${carClass.split(',')
+                  .map(c => `<span class="class-badge ${c.trim().toLowerCase()}">${c.trim()}</span>`)
+                  .join(' ')}
+              </p>
               ${twitch ? `<a class="twitch-link" href="${twitch}" target="_blank">🎥 ${twitch.replace("https://twitch.tv/", "@")}</a>` : ""}
             </div>
           `;
