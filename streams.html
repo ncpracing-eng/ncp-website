@@ -5,7 +5,145 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Streams | Next Curve Performance</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ===== NCP Farbwelt ===== */
+    :root {
+      --ncp-bg: linear-gradient(180deg, #0a0a0a 0%, #101820 100%);
+      --ncp-accent: #00bcd4;
+      --ncp-accent-dark: #0097a7;
+      --ncp-red: #e53935;
+      --ncp-gray: #1a1a1a;
+    }
+
+    body {
+      background: var(--ncp-bg);
+      color: #e0e0e0;
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* === HEADER / SECTION === */
+    .page-header {
+      text-align: center;
+      padding: 60px 20px 30px;
+      background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+      color: white;
+    }
+
+    .page-header h2 {
+      font-size: 2em;
+      margin-bottom: 10px;
+    }
+
+    .streams-section {
+      padding: 40px 30px;
+      max-width: 1400px;
+      margin: auto;
+    }
+
+    /* === STREAM GRIDS === */
+    .streams-grid {
+      display: grid;
+      gap: 25px;
+    }
+
+    .live-grid {
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    }
+
+    .offline-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    /* === CARDS === */
+    .stream-card {
+      border-radius: 14px;
+      overflow: hidden;
+      background: var(--ncp-gray);
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .stream-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 20px var(--ncp-accent);
+    }
+
+    /* === LIVE STREAM === */
+    .stream-video iframe {
+      width: 100%;
+      height: 320px;
+      border: none;
+    }
+
+    .stream-info {
+      text-align: center;
+      padding: 10px;
+      color: var(--ncp-accent);
+      font-weight: 600;
+      font-size: 1.1em;
+      background: #0e0e0e;
+    }
+
+    /* === OFFLINE STREAM === */
+    .offline-box {
+      display: block;
+      text-decoration: none;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #111;
+      transition: all 0.3s ease;
+    }
+
+    .offline-box:hover {
+      box-shadow: 0 0 12px var(--ncp-accent);
+      transform: translateY(-3px);
+    }
+
+    .offline-box img {
+      width: 100%;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
+    }
+
+    .offline-box:hover img {
+      opacity: 0.7;
+    }
+
+    .offline-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(0, 188, 212, 0.2), rgba(0, 0, 0, 0.8));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1em;
+      color: var(--ncp-accent);
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    .offline-box h4 {
+      margin: 10px 0;
+      font-size: 1.1em;
+      color: #ccc;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #aaa;
+      background: #0b0b0b;
+    }
+  </style>
 </head>
+
 <body>
   <div id="header"></div>
 
@@ -24,7 +162,7 @@
     // Footer laden
     fetch("footer.html")
       .then(r => r.text())
-      .then(t => document.getElementById("footer").innerHTML = t));
+      .then(t => (document.getElementById("footer").innerHTML = t));
   </script>
 
   <section class="page-header">
@@ -43,7 +181,6 @@
   <div id="footer"></div>
 
   <script>
-    // === Google Sheet ===
     const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
     const SHEET_NAME = "Streamer";
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
@@ -54,40 +191,36 @@
         const json = JSON.parse(text.substr(47).slice(0, -2));
         const rows = json.table.rows;
 
-        rows.forEach(row => {
+        // Erste Zeile (Header) überspringen
+        rows.slice(1).forEach(row => {
           const name = row.c[0]?.v || "";
-          const twitch = row.c[1]?.v || "";
+          const twitchUser = row.c[1]?.v?.trim() || "";
 
-          // Wir testen, ob der Stream online ist:
-          const iframe = document.createElement("iframe");
-          iframe.src = `https://player.twitch.tv/?channel=${twitch}&parent=${location.hostname}`;
-          iframe.allow = "autoplay; fullscreen";
-          iframe.frameBorder = "0";
+          if (!twitchUser) return;
 
-          // Fallback: Wenn Twitch-Player-Request fehlschlägt -> offline
-          iframe.onload = () => {
-            addStream(name, twitch, true);
-          };
-          iframe.onerror = () => {
-            addStream(name, twitch, false);
+          const img = new Image();
+          img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
+
+          img.onload = () => {
+            // Wenn das Bild erfolgreich lädt → vermutlich live
+            addStream(name, twitchUser, true);
           };
 
-          // Nach 3 Sekunden prüfen (falls Twitch nicht antwortet)
-          setTimeout(() => {
-            if (!iframe.isConnected) addStream(name, twitch, false);
-          }, 3000);
+          img.onerror = () => {
+            addStream(name, twitchUser, false);
+          };
         });
-      });
+      })
+      .catch(err => console.error("Fehler beim Laden der Stream-Daten:", err));
 
     function addStream(name, twitchUser, isLive) {
       const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
-
       const card = document.createElement("div");
       card.classList.add("stream-card");
       if (!isLive) card.classList.add("offline");
 
-      card.innerHTML = isLive
-        ? `
+      if (isLive) {
+        card.innerHTML = `
           <div class="stream-video">
             <iframe
               src="https://player.twitch.tv/?channel=${twitchUser}&parent=${location.hostname}"
@@ -97,13 +230,15 @@
           </div>
           <div class="stream-info">
             <h3>${name}</h3>
-          </div>`
-        : `
-          <div class="offline-box">
+          </div>`;
+      } else {
+        card.innerHTML = `
+          <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
             <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg" alt="${name}">
             <div class="offline-overlay">Offline</div>
             <h4>${name}</h4>
-          </div>`;
+          </a>`;
+      }
 
       container.appendChild(card);
     }
