@@ -23,6 +23,13 @@
         }
       });
     });
+
+  // Footer laden
+  fetch("footer.html")
+    .then(response => response.text())
+    .then(data => {
+      document.getElementById("footer").innerHTML = data;
+    });
 </script>
 
 
@@ -61,8 +68,6 @@
     </div>
   </section>
 
-  <footer>
-    <p>© 2025 Next Curve Performance | SimRacing Team</p>
-  </footer>
+  <div id="footer"></div>
 </body>
 </html>
