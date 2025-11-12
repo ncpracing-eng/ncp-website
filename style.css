@@ -350,12 +350,16 @@ nav a.active {
   background-color: #ff0800;
 }
 
+.class-badge.gt4 {
+  background-color: #ffff00;
+}
+
 .class-badge.gtp {
-  background-color: #ff5500;
+  background-color: #8600ff;
 }
 
 .class-badge.porsche {
-  background-color: #8600ff;
+  background-color: #ff6d01;
 }
 
 .class-badge.tcr {
@@ -371,7 +375,11 @@ nav a.active {
 }
 
 .class-badge.formula {
-  background-color: #ff8600;
+  background-color: #00ffff;
+}
+
+.class-badge.production {
+  background-color: #b7b7b7;
 }
 
 /* === Twitch-Link === */
