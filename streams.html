@@ -6,206 +6,218 @@
   <title>Streams | Next Curve Performance</title>
   <link rel="stylesheet" href="style.css" />
   <style>
-    /* ==== Hintergrundfarben im NCP-Stil ==== */
+    /* ===== NCP Farbwelt ===== */
+    :root {
+      --ncp-bg: linear-gradient(180deg, #0a0a0a 0%, #101820 100%);
+      --ncp-accent: #00bcd4;
+      --ncp-accent-dark: #0097a7;
+      --ncp-red: #e53935;
+      --ncp-gray: #1a1a1a;
+    }
+
     body {
-      background: radial-gradient(circle at top, #0a0a0f, #000);
-      color: #f5f5f5;
+      background: var(--ncp-bg);
+      color: #e0e0e0;
       font-family: "Poppins", sans-serif;
       margin: 0;
       padding: 0;
     }
 
-    h2 {
+    /* === HEADER / SECTION === */
+    .page-header {
       text-align: center;
-      color: #00c6ff;
-      margin-top: 30px;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+      padding: 60px 20px 30px;
+      background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
+      color: white;
     }
 
-    /* ==== Container ==== */
-    .streams-container {
-      width: 90%;
-      max-width: 1200px;
-      margin: 40px auto;
-      display: flex;
-      flex-direction: column;
-      gap: 40px;
+    .page-header h2 {
+      font-size: 2em;
+      margin-bottom: 10px;
     }
 
-    /* ==== Sektionen ==== */
     .streams-section {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
+      padding: 40px 30px;
+      max-width: 1400px;
+      margin: auto;
     }
 
-    .streams-section h3 {
-      border-left: 5px solid #00c6ff;
-      padding-left: 10px;
-      font-size: 1.3rem;
-      color: #00c6ff;
-    }
-
-    /* ==== Stream-Karten ==== */
-    .stream-grid {
+    /* === STREAM GRIDS === */
+    .streams-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-      gap: 20px;
+      gap: 25px;
     }
 
+    .live-grid {
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    }
+
+    .offline-grid {
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    }
+
+    /* === CARDS === */
     .stream-card {
-      background: #111;
-      border-radius: 12px;
+      border-radius: 14px;
       overflow: hidden;
-      box-shadow: 0 0 15px rgba(0, 198, 255, 0.1);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      background: var(--ncp-gray);
+      position: relative;
+      transition: all 0.3s ease;
     }
 
     .stream-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 0 25px rgba(0, 198, 255, 0.3);
+      transform: scale(1.02);
+      box-shadow: 0 0 20px var(--ncp-accent);
     }
 
+    /* === LIVE STREAM === */
     .stream-video iframe {
       width: 100%;
-      height: 280px;
+      height: 320px;
       border: none;
-      display: block;
     }
 
     .stream-info {
-      padding: 10px 15px;
       text-align: center;
-      background: #0f0f0f;
+      padding: 10px;
+      color: var(--ncp-accent);
+      font-weight: 600;
+      font-size: 1.1em;
+      background: #0e0e0e;
     }
 
-    .stream-info h3 {
-      margin: 0;
-      color: #00c6ff;
-      font-size: 1.1rem;
-    }
-
-    /* ==== Offline Box ==== */
+    /* === OFFLINE STREAM === */
     .offline-box {
-      position: relative;
       display: block;
       text-decoration: none;
-      color: inherit;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      border-radius: 12px;
+      background: #111;
+      transition: all 0.3s ease;
+    }
+
+    .offline-box:hover {
+      box-shadow: 0 0 12px var(--ncp-accent);
+      transform: translateY(-3px);
     }
 
     .offline-box img {
       width: 100%;
-      display: block;
-      filter: grayscale(60%) brightness(0.6);
-      transition: filter 0.3s ease;
+      opacity: 0.5;
+      transition: opacity 0.3s ease;
     }
 
     .offline-box:hover img {
-      filter: grayscale(0%) brightness(0.9);
+      opacity: 0.7;
     }
 
     .offline-overlay {
       position: absolute;
-      top: 8px;
-      left: 8px;
-      background: rgba(255, 0, 0, 0.7);
-      padding: 3px 8px;
-      border-radius: 4px;
-      font-size: 0.8rem;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(0, 188, 212, 0.2), rgba(0, 0, 0, 0.8));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.1em;
+      color: var(--ncp-accent);
       font-weight: bold;
+      text-transform: uppercase;
     }
 
     .offline-box h4 {
-      margin: 8px;
-      font-size: 1rem;
-      text-align: center;
-      color: #ddd;
+      margin: 10px 0;
+      font-size: 1.1em;
+      color: #ccc;
     }
 
     footer {
       text-align: center;
       padding: 20px;
-      color: #888;
-      font-size: 0.9rem;
+      color: #aaa;
+      background: #0b0b0b;
     }
   </style>
 </head>
+
 <body>
   <div id="header"></div>
 
   <script>
     // Header laden
     fetch("header.html")
-      .then(res => res.text())
-      .then(data => document.getElementById("header").innerHTML = data);
+      .then(r => r.text())
+      .then(t => {
+        document.getElementById("header").innerHTML = t;
+        const path = window.location.pathname.split("/").pop();
+        document.querySelectorAll("nav a").forEach(a => {
+          if (a.getAttribute("href") === path) a.classList.add("active");
+        });
+      });
+
+    // Footer laden
+    fetch("footer.html")
+      .then(r => r.text())
+      .then(t => (document.getElementById("footer").innerHTML = t));
   </script>
 
-  <h2>Twitch Streams</h2>
+  <section class="page-header">
+    <h2>🎥 Live Streams</h2>
+    <p>Erlebe unsere Fahrer live auf der Strecke!</p>
+  </section>
 
-  <div class="streams-container">
-    <section class="streams-section">
-      <h3>🔴 Live</h3>
-      <div id="live-streams" class="stream-grid"></div>
-    </section>
+  <section class="streams-section">
+    <h3>🔴 Live</h3>
+    <div id="live-streams" class="streams-grid live-grid"></div>
 
-    <section class="streams-section">
-      <h3>⚫ Offline</h3>
-      <div id="offline-streams" class="stream-grid"></div>
-    </section>
-  </div>
+    <h3 style="margin-top:40px;">⚫ Offline</h3>
+    <div id="offline-streams" class="streams-grid offline-grid"></div>
+  </section>
 
-  <footer>
-    <p>© 2025 Next Curve Performance | Twitch Streams</p>
-  </footer>
+  <div id="footer"></div>
 
   <script>
     const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
     const SHEET_NAME = "Streamer";
     const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
-    async function loadStreams() {
-      try {
-        const res = await fetch(SHEET_URL);
-        const text = await res.text();
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(text => {
         const json = JSON.parse(text.substr(47).slice(0, -2));
-        const rows = json.table.rows.slice(1); // erste Zeile ignorieren
+        const rows = json.table.rows;
 
-        const liveContainer = document.getElementById("live-streams");
-        const offlineContainer = document.getElementById("offline-streams");
-        liveContainer.innerHTML = "";
-        offlineContainer.innerHTML = "";
-
-        for (const row of rows) {
+        // Erste Zeile (Header) überspringen
+        rows.slice(1).forEach(row => {
           const name = row.c[0]?.v || "";
           const twitchUser = row.c[1]?.v?.trim() || "";
-          if (!twitchUser) continue;
 
-          const previewUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg?rand=${Date.now()}`;
-          const isLive = await checkIfLive(previewUrl);
+          if (!twitchUser) return;
 
-          addStream(name, twitchUser, isLive);
-        }
-      } catch (err) {
-        console.error("Fehler beim Laden der Streams:", err);
-      }
-    }
+          const img = new Image();
+          img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
 
-    async function checkIfLive(url) {
-      try {
-        const res = await fetch(url, { cache: "no-store" });
-        if (!res.ok) return false;
-        const blob = await res.blob();
-        return blob.size > 20000; // < 20 KB ist meist offline
-      } catch {
-        return false;
-      }
-    }
+          img.onload = () => {
+            // Wenn das Bild erfolgreich lädt → vermutlich live
+            addStream(name, twitchUser, true);
+          };
+
+          img.onerror = () => {
+            addStream(name, twitchUser, false);
+          };
+        });
+      })
+      .catch(err => console.error("Fehler beim Laden der Stream-Daten:", err));
 
     function addStream(name, twitchUser, isLive) {
       const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
       const card = document.createElement("div");
       card.classList.add("stream-card");
+      if (!isLive) card.classList.add("offline");
 
       if (isLive) {
         card.innerHTML = `
@@ -220,10 +232,9 @@
             <h3>${name}</h3>
           </div>`;
       } else {
-        const previewUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
         card.innerHTML = `
           <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
-            <img src="${previewUrl}" alt="${name}">
+            <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg" alt="${name}">
             <div class="offline-overlay">Offline</div>
             <h4>${name}</h4>
           </a>`;
@@ -231,9 +242,6 @@
 
       container.appendChild(card);
     }
-
-    loadStreams();
-    setInterval(loadStreams, 5 * 60 * 1000);
   </script>
 </body>
 </html>
