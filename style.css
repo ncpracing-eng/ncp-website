@@ -270,58 +270,6 @@ nav a.active {
   color: var(--green);
   text-decoration: underline;
 }
-/*--------------------------------------------------Event kacheln---------------------------------------------------------------------------------------------------------------*/
-
-.event-list {
-  display: flex;
-  flex-wrap: wrap;          /* Karten nebeneinander */
-  gap: 20px;                /* Abstand zwischen Karten */
-  justify-content: center;  /* zentriert */
-}
-
-.event-card {
-  display: flex;
-  align-items: flex-start;
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 15px;
-  width: 100%;
-  max-width: 450px;         /* jede Karte max 450px breit */
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
-}
-
-.event-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
-}
-
-.event-logo {
-  width: 140px;             /* Bild größer */
-  height: 100px;
-  object-fit: cover;
-  border-radius: 8px;
-  margin-right: 15px;
-  flex-shrink: 0;
-}
-
-.event-info h4 {
-  margin: 0 0 5px 0;
-  color: #00ff7f;           /* Titelfarbe */
-}
-
-.event-meta {
-  font-size: 0.9rem;
-  color: #bbb;
-}
-
-.event-description {
-  font-size: 0.85rem;
-  color: #ddd;
-  margin-top: 5px;
-}
-
-
 
 
 /*--------------------------------------------------Fahrer kacheln---------------------------------------------------------------------------------------------------------------*/
