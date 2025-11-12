@@ -193,22 +193,21 @@
       const json = JSON.parse(text.substr(47).slice(0, -2));
       const rows = json.table.rows;
 
-      // Container leeren (aktualisieren)
+      // Container leeren (neu aufbauen)
       const liveContainer = document.getElementById("live-streams");
       const offlineContainer = document.getElementById("offline-streams");
       liveContainer.innerHTML = "";
       offlineContainer.innerHTML = "";
 
-      // Erste Zeile überspringen
+      // Erste Zeile (Header) überspringen
       const dataRows = rows.slice(1);
 
-      // Jeden Streamer prüfen
       for (const row of dataRows) {
         const name = row.c[0]?.v || "";
         const twitchUser = row.c[1]?.v?.trim() || "";
         if (!twitchUser) continue;
 
-        // Twitch oEmbed prüfen (ob live)
+        // Twitch oEmbed prüfen, ob live
         try {
           const response = await fetch(`https://embed.twitch.tv/oembed?url=https://www.twitch.tv/${twitchUser}`);
           if (response.ok) {
@@ -234,6 +233,7 @@
     card.classList.add("stream-card");
 
     if (isLive) {
+      // === LIVE STREAM ===
       card.innerHTML = `
         <div class="stream-video">
           <iframe
@@ -246,9 +246,11 @@
           <h3>${name}</h3>
         </div>`;
     } else {
+      // === OFFLINE STREAM ===
+      const previewUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
       card.innerHTML = `
         <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
-          <img src="images/offline_placeholder.jpg" alt="${name}">
+          <img src="${previewUrl}" alt="${name}">
           <div class="offline-overlay">Offline</div>
           <h4>${name}</h4>
         </a>`;
@@ -261,6 +263,7 @@
   loadStreams();
   setInterval(loadStreams, 5 * 60 * 1000); // 5 Minuten
 </script>
+
 
 </body>
 </html>
