@@ -180,41 +180,87 @@
 
   <div id="footer"></div>
 
-  <script>
-    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
-    const SHEET_NAME = "Streamer";
-    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+ <script>
+  const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+  const SHEET_NAME = "Streamer";
+  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
-    fetch(SHEET_URL)
-  .then(res => res.text())
-  .then(text => {
-    const json = JSON.parse(text.substr(47).slice(0, -2));
-    const rows = json.table.rows;
+  // === Hauptfunktion: Streamliste laden ===
+  async function loadStreams() {
+    try {
+      const res = await fetch(SHEET_URL);
+      const text = await res.text();
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = json.table.rows;
 
-    // Erste Zeile (Header) überspringen
-    rows.slice(1).forEach(row => {
-      const name = row.c[0]?.v || "";
-      const twitchUser = row.c[1]?.v?.trim() || "";
-      if (!twitchUser) return;
+      // Container leeren (aktualisieren)
+      const liveContainer = document.getElementById("live-streams");
+      const offlineContainer = document.getElementById("offline-streams");
+      liveContainer.innerHTML = "";
+      offlineContainer.innerHTML = "";
 
-      // Twitch oEmbed check (ohne Token)
-      fetch(`https://embed.twitch.tv/oembed?url=https://www.twitch.tv/${twitchUser}`)
-        .then(response => {
+      // Erste Zeile überspringen
+      const dataRows = rows.slice(1);
+
+      // Jeden Streamer prüfen
+      for (const row of dataRows) {
+        const name = row.c[0]?.v || "";
+        const twitchUser = row.c[1]?.v?.trim() || "";
+        if (!twitchUser) continue;
+
+        // Twitch oEmbed prüfen (ob live)
+        try {
+          const response = await fetch(`https://embed.twitch.tv/oembed?url=https://www.twitch.tv/${twitchUser}`);
           if (response.ok) {
             addStream(name, twitchUser, true);
           } else {
             addStream(name, twitchUser, false);
           }
-        })
-        .catch(() => {
+        } catch {
           addStream(name, twitchUser, false);
-        });
-    });
-  })
-  .catch(err => console.error("Fehler beim Laden der Stream-Daten:", err));
+        }
+      }
 
-      container.appendChild(card);
+      console.log("✅ Streams aktualisiert:", new Date().toLocaleTimeString());
+    } catch (err) {
+      console.error("Fehler beim Laden der Stream-Daten:", err);
     }
-  </script>
+  }
+
+  // === Stream-Karten erstellen ===
+  function addStream(name, twitchUser, isLive) {
+    const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
+    const card = document.createElement("div");
+    card.classList.add("stream-card");
+
+    if (isLive) {
+      card.innerHTML = `
+        <div class="stream-video">
+          <iframe
+            src="https://player.twitch.tv/?channel=${twitchUser}&parent=${location.hostname}"
+            allow="autoplay; fullscreen"
+            frameborder="0">
+          </iframe>
+        </div>
+        <div class="stream-info">
+          <h3>${name}</h3>
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
+          <img src="images/offline_placeholder.jpg" alt="${name}">
+          <div class="offline-overlay">Offline</div>
+          <h4>${name}</h4>
+        </a>`;
+    }
+
+    container.appendChild(card);
+  }
+
+  // === Erstes Laden + Auto-Refresh alle 5 Minuten ===
+  loadStreams();
+  setInterval(loadStreams, 5 * 60 * 1000); // 5 Minuten
+</script>
+
 </body>
 </html>
