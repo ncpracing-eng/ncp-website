@@ -1,6 +1,6 @@
 <footer style="background:#080808; color:#eee; padding:20px; text-align:center;">
   <div style="display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:20px;">
-    
+
     <!-- Discord Widget -->
     <iframe
       src="https://discord.com/widget?id=1220041614811205744&theme=dark"
@@ -11,16 +11,31 @@
       sandbox="allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
       style="border-radius:10px; flex:1 1 350px; max-width:100%;"
     ></iframe>
-    
-    <!-- Join Button + Text -->
+
+    <!-- Join Button + Socials -->
     <div style="flex:1 1 250px; max-width:350px; display:flex; flex-direction:column; justify-content:center; align-items:center; height:300px;">
+      
       <p style="margin-bottom:15px; font-size:1em;">
         Trete unserem Discord-Server bei und chatte live mit uns!
       </p>
+      
+      <!-- Discord Button -->
       <a href="https://discord.gg/dein-discord-link" target="_blank"
-         style="background:#3cff00; color:#000; padding:12px 25px; border-radius:10px; text-decoration:none; font-weight:bold; font-size:1em; transition:all 0.3s;">
+         class="social-button"
+         style="background:#3cff00; color:#000; padding:12px 25px; border-radius:10px; text-decoration:none; font-weight:bold; font-size:1em; transition:all 0.3s; margin-bottom:15px;">
         Join our Discord
       </a>
+
+      <!-- Social Icons -->
+      <div style="display:flex; gap:15px;">
+        <a href="https://instagram.com/dein-instagram" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" style="width:35px; height:35px; transition:all 0.3s;">
+        </a>
+        <a href="https://facebook.com/dein-facebook" target="_blank" class="social-icon">
+          <img src="https://cdn-icons-png.flaticon.com/512/145/145802.png" alt="Facebook" style="width:35px; height:35px; transition:all 0.3s;">
+        </a>
+      </div>
+
     </div>
 
   </div>
@@ -28,4 +43,19 @@
   <p style="margin-top:20px; font-size:0.85em; color:#999;">
     © 2025 Next Curve Performance | SimRacing Team
   </p>
+
+  <style>
+    /* Hover Effekt für Button */
+    .social-button:hover {
+      transform: scale(1.05);
+      background-color: #2ecc00;
+      box-shadow: 0 0 10px #3cff00;
+    }
+
+    /* Hover Effekt für Social Icons */
+    .social-icon img:hover {
+      transform: scale(1.2);
+      filter: brightness(1.2);
+    }
+  </style>
 </footer>
