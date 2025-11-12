@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Streams | Next Curve Performance</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="header"></div>
+
+  <script>
+    // Header laden
+    fetch("header.html")
+      .then(r => r.text())
+      .then(t => {
+        document.getElementById("header").innerHTML = t;
+        const path = window.location.pathname.split("/").pop();
+        document.querySelectorAll("nav a").forEach(a => {
+          if (a.getAttribute("href") === path) a.classList.add("active");
+        });
+      });
+
+    // Footer laden
+    fetch("footer.html")
+      .then(r => r.text())
+      .then(t => document.getElementById("footer").innerHTML = t));
+  </script>
+
+  <section class="page-header">
+    <h2>🎥 Live Streams</h2>
+    <p>Erlebe unsere Fahrer live auf der Strecke!</p>
+  </section>
+
+  <section class="streams-section">
+    <h3>🔴 Live</h3>
+    <div id="live-streams" class="streams-grid live-grid"></div>
+
+    <h3 style="margin-top:40px;">⚫ Offline</h3>
+    <div id="offline-streams" class="streams-grid offline-grid"></div>
+  </section>
+
+  <div id="footer"></div>
+
+  <script>
+    // === Google Sheet ===
+    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+    const SHEET_NAME = "Streamer";
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        rows.forEach(row => {
+          const name = row.c[0]?.v || "";
+          const twitch = row.c[1]?.v || "";
+
+          // Wir testen, ob der Stream online ist:
+          const iframe = document.createElement("iframe");
+          iframe.src = `https://player.twitch.tv/?channel=${twitch}&parent=${location.hostname}`;
+          iframe.allow = "autoplay; fullscreen";
+          iframe.frameBorder = "0";
+
+          // Fallback: Wenn Twitch-Player-Request fehlschlägt -> offline
+          iframe.onload = () => {
+            addStream(name, twitch, true);
+          };
+          iframe.onerror = () => {
+            addStream(name, twitch, false);
+          };
+
+          // Nach 3 Sekunden prüfen (falls Twitch nicht antwortet)
+          setTimeout(() => {
+            if (!iframe.isConnected) addStream(name, twitch, false);
+          }, 3000);
+        });
+      });
+
+    function addStream(name, twitchUser, isLive) {
+      const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
+
+      const card = document.createElement("div");
+      card.classList.add("stream-card");
+      if (!isLive) card.classList.add("offline");
+
+      card.innerHTML = isLive
+        ? `
+          <div class="stream-video">
+            <iframe
+              src="https://player.twitch.tv/?channel=${twitchUser}&parent=${location.hostname}"
+              allow="autoplay; fullscreen"
+              frameborder="0">
+            </iframe>
+          </div>
+          <div class="stream-info">
+            <h3>${name}</h3>
+          </div>`
+        : `
+          <div class="offline-box">
+            <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg" alt="${name}">
+            <div class="offline-overlay">Offline</div>
+            <h4>${name}</h4>
+          </div>`;
+
+      container.appendChild(card);
+    }
+  </script>
+</body>
+</html>
