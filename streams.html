@@ -1,86 +1,239 @@
-<script>
-  const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
-  const SHEET_NAME = "Streamer";
-  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Streams | Next Curve Performance</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ==== Hintergrundfarben im NCP-Stil ==== */
+    body {
+      background: radial-gradient(circle at top, #0a0a0f, #000);
+      color: #f5f5f5;
+      font-family: "Poppins", sans-serif;
+      margin: 0;
+      padding: 0;
+    }
 
-  async function loadStreams() {
-    try {
-      const res = await fetch(SHEET_URL);
-      const text = await res.text();
-      const json = JSON.parse(text.substr(47).slice(0, -2));
-      const rows = json.table.rows.slice(1); // erste Zeile ignorieren
+    h2 {
+      text-align: center;
+      color: #00c6ff;
+      margin-top: 30px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
 
-      const liveContainer = document.getElementById("live-streams");
-      const offlineContainer = document.getElementById("offline-streams");
-      liveContainer.innerHTML = "";
-      offlineContainer.innerHTML = "";
+    /* ==== Container ==== */
+    .streams-container {
+      width: 90%;
+      max-width: 1200px;
+      margin: 40px auto;
+      display: flex;
+      flex-direction: column;
+      gap: 40px;
+    }
 
-      for (const row of rows) {
-        const name = row.c[0]?.v || "";
-        const twitchUser = row.c[1]?.v?.trim() || "";
-        if (!twitchUser) continue;
+    /* ==== Sektionen ==== */
+    .streams-section {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
 
-        // Twitch Preview-Bild laden
-        const previewUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg?rand=${Date.now()}`;
+    .streams-section h3 {
+      border-left: 5px solid #00c6ff;
+      padding-left: 10px;
+      font-size: 1.3rem;
+      color: #00c6ff;
+    }
 
-        // Bild laden und prüfen, ob es sich ändert (live) oder Standardbild (offline)
-        const isLive = await checkIfLive(previewUrl);
+    /* ==== Stream-Karten ==== */
+    .stream-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+      gap: 20px;
+    }
 
-        addStream(name, twitchUser, isLive);
+    .stream-card {
+      background: #111;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 0 15px rgba(0, 198, 255, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .stream-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 25px rgba(0, 198, 255, 0.3);
+    }
+
+    .stream-video iframe {
+      width: 100%;
+      height: 280px;
+      border: none;
+      display: block;
+    }
+
+    .stream-info {
+      padding: 10px 15px;
+      text-align: center;
+      background: #0f0f0f;
+    }
+
+    .stream-info h3 {
+      margin: 0;
+      color: #00c6ff;
+      font-size: 1.1rem;
+    }
+
+    /* ==== Offline Box ==== */
+    .offline-box {
+      position: relative;
+      display: block;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .offline-box img {
+      width: 100%;
+      display: block;
+      filter: grayscale(60%) brightness(0.6);
+      transition: filter 0.3s ease;
+    }
+
+    .offline-box:hover img {
+      filter: grayscale(0%) brightness(0.9);
+    }
+
+    .offline-overlay {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      background: rgba(255, 0, 0, 0.7);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    .offline-box h4 {
+      margin: 8px;
+      font-size: 1rem;
+      text-align: center;
+      color: #ddd;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #888;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="header"></div>
+
+  <script>
+    // Header laden
+    fetch("header.html")
+      .then(res => res.text())
+      .then(data => document.getElementById("header").innerHTML = data);
+  </script>
+
+  <h2>Twitch Streams</h2>
+
+  <div class="streams-container">
+    <section class="streams-section">
+      <h3>🔴 Live</h3>
+      <div id="live-streams" class="stream-grid"></div>
+    </section>
+
+    <section class="streams-section">
+      <h3>⚫ Offline</h3>
+      <div id="offline-streams" class="stream-grid"></div>
+    </section>
+  </div>
+
+  <footer>
+    <p>© 2025 Next Curve Performance | Twitch Streams</p>
+  </footer>
+
+  <script>
+    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+    const SHEET_NAME = "Streamer";
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    async function loadStreams() {
+      try {
+        const res = await fetch(SHEET_URL);
+        const text = await res.text();
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = json.table.rows.slice(1); // erste Zeile ignorieren
+
+        const liveContainer = document.getElementById("live-streams");
+        const offlineContainer = document.getElementById("offline-streams");
+        liveContainer.innerHTML = "";
+        offlineContainer.innerHTML = "";
+
+        for (const row of rows) {
+          const name = row.c[0]?.v || "";
+          const twitchUser = row.c[1]?.v?.trim() || "";
+          if (!twitchUser) continue;
+
+          const previewUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg?rand=${Date.now()}`;
+          const isLive = await checkIfLive(previewUrl);
+
+          addStream(name, twitchUser, isLive);
+        }
+      } catch (err) {
+        console.error("Fehler beim Laden der Streams:", err);
+      }
+    }
+
+    async function checkIfLive(url) {
+      try {
+        const res = await fetch(url, { cache: "no-store" });
+        if (!res.ok) return false;
+        const blob = await res.blob();
+        return blob.size > 20000; // < 20 KB ist meist offline
+      } catch {
+        return false;
+      }
+    }
+
+    function addStream(name, twitchUser, isLive) {
+      const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
+      const card = document.createElement("div");
+      card.classList.add("stream-card");
+
+      if (isLive) {
+        card.innerHTML = `
+          <div class="stream-video">
+            <iframe
+              src="https://player.twitch.tv/?channel=${twitchUser}&parent=${location.hostname}"
+              allow="autoplay; fullscreen"
+              frameborder="0">
+            </iframe>
+          </div>
+          <div class="stream-info">
+            <h3>${name}</h3>
+          </div>`;
+      } else {
+        const previewUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
+        card.innerHTML = `
+          <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
+            <img src="${previewUrl}" alt="${name}">
+            <div class="offline-overlay">Offline</div>
+            <h4>${name}</h4>
+          </a>`;
       }
 
-      console.log("✅ Streams aktualisiert:", new Date().toLocaleTimeString());
-    } catch (err) {
-      console.error("Fehler beim Laden der Stream-Daten:", err);
-    }
-  }
-
-  // Prüfen, ob Stream live ist → anhand der Größe des Preview-Bildes
-  async function checkIfLive(url) {
-    try {
-      const res = await fetch(url, { cache: "no-store" });
-      if (!res.ok) return false;
-
-      const blob = await res.blob();
-      // Standard Offline-Vorschaubild ist meist sehr klein (< 10KB)
-      return blob.size > 20000; // ca. 20 KB = live
-    } catch {
-      return false;
-    }
-  }
-
-  // Stream-Karten erzeugen
-  function addStream(name, twitchUser, isLive) {
-    const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
-    const card = document.createElement("div");
-    card.classList.add("stream-card");
-
-    if (isLive) {
-      card.innerHTML = `
-        <div class="stream-video">
-          <iframe
-            src="https://player.twitch.tv/?channel=${twitchUser}&parent=${location.hostname}"
-            allow="autoplay; fullscreen"
-            frameborder="0">
-          </iframe>
-        </div>
-        <div class="stream-info">
-          <h3>${name}</h3>
-        </div>`;
-    } else {
-      const previewUrl = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
-      card.innerHTML = `
-        <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
-          <img src="${previewUrl}" alt="${name}">
-          <div class="offline-overlay">Offline</div>
-          <h4>${name}</h4>
-        </a>`;
+      container.appendChild(card);
     }
 
-    container.appendChild(card);
-  }
-
-  // Initial laden + alle 5 Minuten neu prüfen
-  loadStreams();
-  setInterval(loadStreams, 5 * 60 * 1000);
-</script>
+    loadStreams();
+    setInterval(loadStreams, 5 * 60 * 1000);
+  </script>
+</body>
+</html>
