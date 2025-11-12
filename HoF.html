@@ -3,59 +3,131 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Next Curve Performance</title>
+  <title>Hall of Fame | Next Curve Performance</title>
   <link rel="stylesheet" href="style.css">
+  <script defer src="js/hof.js"></script>
 </head>
 <body>
-  <header class="ncp-header">
-    <div class="logo-area">
-      <img src="images/ncp-logo.png" alt="NCP Logo" class="logo">
-      <h1>Next Curve Performance</h1>
-    </div>
-    <nav>
-      <a href="index.html">Home</a>
-      <a href="fahrer.html">Fahrer</a>
-      <a href="events.html">Events</a>
-    </nav>
-  </header>
 
-  <section class="hero">
-    <div class="hero-content">
-      <h2>SimRacing auf höchstem Niveau</h2>
-      <p>GT3 • GTP • Porsche Cup – Präzision, Leidenschaft, Teamgeist.</p>
-      <a href="events.html" class="cta">Events ansehen</a>
-    </div>
+  <!-- Header -->
+  <div id="header"></div>
+  <script>
+    fetch("header.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("header").innerHTML = data;
+
+        // Aktiven Link markieren
+        const path = window.location.pathname.split("/").pop();
+        const links = document.querySelectorAll("nav a");
+        links.forEach(a => {
+          if (a.getAttribute("href") === path) a.classList.add("active");
+        });
+      });
+  </script>
+
+  <!-- Page Intro -->
+  <section class="page-header">
+    <h2>Hall of Fame 🏆</h2>
+    <p>Unsere Erfolge, Siege und Highlights im SimRacing.</p>
   </section>
 
-  <section class="about">
-    <h2>Über uns</h2>
-    <p>
-      <strong>Next Curve Performance</strong> ist ein professionelles SimRacing-Team mit Fokus auf <strong>iRacing</strong> 
-      und anderen Simulationen. Unsere Fahrer treten in verschiedenen Klassen wie <strong>GT3</strong>, <strong>GTP</strong> 
-      und <strong>Porsche Cup</strong> an – immer mit dem Ziel, das Maximum herauszuholen.
-    </p>
-    <p>
-      Wir kombinieren Leidenschaft, Strategie und Technik, um konstant vorn mitzufahren.
-    </p>
-  </section>
-
-  <section class="features">
-    <div class="feature-card">
-      <h3>🏎️ Präzision</h3>
-      <p>Fein abgestimmte Setups, millimetergenaue Linienwahl, perfektes Timing.</p>
-    </div>
-    <div class="feature-card">
-      <h3>⚙️ Technik</h3>
-      <p>Modernstes Equipment, Data-Analysis, Telemetrie und strategische Planung.</p>
-    </div>
-    <div class="feature-card">
-      <h3>🔥 Leidenschaft</h3>
-      <p>Teamgeist, Emotionen und der unbändige Wille zum Sieg – das ist NCP.</p>
-    </div>
+  <!-- Hall of Fame Tabelle -->
+  <section class="hof-section">
+    <table id="hofTable">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Teilnehmer</th>
+          <th>Datum</th>
+          <th>Strecke</th>
+          <th>Auto</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dynamisch gefüllt durch JS -->
+      </tbody>
+    </table>
   </section>
 
   <footer>
     <p>© 2025 Next Curve Performance | SimRacing Team</p>
   </footer>
+
+  <style>
+    .page-header {
+      text-align: center;
+      padding: 40px 20px;
+      background: linear-gradient(90deg, #3cff00, #004cff);
+      color: #fff;
+    }
+
+    .hof-section {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: auto;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #1a1a1a;
+      color: #eaeaea;
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #333;
+      text-align: left;
+    }
+
+    th {
+      background: #004cff;
+      color: #fff;
+      text-transform: uppercase;
+    }
+
+    tr:hover {
+      background-color: #111;
+    }
+  </style>
+
+  <script>
+    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+    const SHEET_NAME = "Hall_of_Fame"; // Neues Sheet in deiner Google Sheets Datei
+
+    const hofTableBody = document.querySelector("#hofTable tbody");
+
+    fetch(`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`)
+      .then(res => res.text())
+      .then(txt => {
+        const json = JSON.parse(txt.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+
+        rows.forEach(row => {
+          if (!row.c) return;
+          const cells = (row.c || []).map(c => c?.v ?? "");
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${cells[0] || ""}</td>
+            <td>${cells[1] || ""}</td>
+            <td>${cells[2] || ""}</td>
+            <td>${cells[3] || ""}</td>
+            <td>${cells[4] || ""}</td>
+          `;
+          hofTableBody.appendChild(tr);
+        });
+
+        if (!hofTableBody.hasChildNodes()) {
+          hofTableBody.innerHTML = `<tr><td colspan="5">Keine Erfolge gefunden</td></tr>`;
+        }
+      })
+      .catch(err => {
+        console.error("Fehler beim Laden der HoF-Daten:", err);
+        hofTableBody.innerHTML = `<tr><td colspan="5">⚠️ Daten konnten nicht geladen werden</td></tr>`;
+      });
+  </script>
+
 </body>
 </html>
