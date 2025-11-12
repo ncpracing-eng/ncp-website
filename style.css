@@ -347,7 +347,7 @@ nav a.active {
 
 /* === Klassenfarben === */
 .class-badge.gt3 {
-  background-color: #0078ff;
+  background-color: #ff0800;
 }
 
 .class-badge.gtp {
@@ -355,15 +355,23 @@ nav a.active {
 }
 
 .class-badge.porsche {
-  background-color: #e60073;
+  background-color: #8600ff;
 }
 
 .class-badge.tcr {
-  background-color: #00c48c;
+  background-color: #79ff00;
 }
 
 .class-badge.lmp2 {
-  background-color: #9b59b6;
+  background-color: #0078ff;
+}
+
+.class-badge.nascar {
+  background-color: #ff0079;
+}
+
+.class-badge.formula {
+  background-color: #ff8600;
 }
 
 /* === Twitch-Link === */
