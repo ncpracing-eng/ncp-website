@@ -43,7 +43,6 @@
             <th>Serie</th>
             <th>Strecke</th>
             <th>Beschreibung</th>
-            <th>Logo</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -57,10 +56,10 @@
           <tr>
             <th>Datum</th>
             <th>Event</th>
-            <th>Simulation</th>
+            <th>Serie</th>
             <th>Strecke</th>
             <th>Beschreibung</th>
-            <th>Logo</th>
+            <th>Sim</th>
           </tr>
         </thead>
         <tbody></tbody>
@@ -99,10 +98,10 @@
           tr.innerHTML = `
             <td>${date}</td>
             <td>${event}</td>
-            <td>${serie || sim}</td>
+            <td>${serie}</td>
             <td>${track}</td>
             <td>${description}</td>
-            <td>${logo ? `<img src="${logo}" alt="${event}" style="height:40px;">` : ""}</td>
+            <td>${sim}</td>
           `;
 
           if (sim === "iracing") {
