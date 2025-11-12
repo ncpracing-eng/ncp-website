@@ -8,33 +8,33 @@
   <script defer src="js/fahrer.js"></script>
 </head>
 <body>
- <div id="header"></div>
-<script>
-  fetch("header.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("header").innerHTML = data;
+  <!-- Header wird dynamisch geladen -->
+  <div id="header"></div>
+  <script>
+    fetch("header.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("header").innerHTML = data;
 
-      // active link hervorheben
-      const path = window.location.pathname.split("/").pop();
-      const links = document.querySelectorAll("nav a");
-      links.forEach(a => {
-        if (a.getAttribute("href") === path) {
-          a.classList.add("active");
-        }
+        // aktiven Link hervorheben
+        const path = window.location.pathname.split("/").pop();
+        document.querySelectorAll("nav a").forEach(a => {
+          if (a.getAttribute("href") === path) a.classList.add("active");
+        });
       });
-    });
-</script>
+  </script>
 
-
+  <!-- Intro -->
   <section class="page-header">
     <h2>Unsere Fahrer</h2>
     <p>Die Elite von Next Curve Performance – präzise, schnell, fokussiert.</p>
   </section>
 
+  <!-- Tabelle -->
   <section class="data-section">
     <div class="table-card driver-card">
       <h3 class="table-title">🏎️ Fahrerübersicht</h3>
+
       <table id="fahrerTable" class="ncp-table">
         <thead>
           <tr>
@@ -45,42 +45,7 @@
           </tr>
         </thead>
         <tbody>
-          <script>
-                const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw"; // aus Google Sheet URL
-                const SHEET_NAME = "Fahrer"; // Tabname
-                const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
-                
-                fetch(SHEET_URL)
-                  .then(res => res.text())
-                  .then(text => {
-                    const json = JSON.parse(text.substr(47).slice(0, -2)); // Google Sheets JSON-Wrapper entfernen
-                    const rows = json.table.rows;
-                    const container = document.getElementById("members-container");
-                
-                    rows.forEach(row => {
-                      const name = row.c[0]?.v || "";
-                      const role = row.c[1]?.v || "";
-                      const carClass = row.c[2]?.v || "";
-                      const twitch = row.c[3]?.v || "";
-                
-                      // HTML-Karte bauen
-                      const card = document.createElement("div");
-                      card.classList.add("card");
-                      card.innerHTML = `
-                        <h3>${name}</h3>
-                        <p>${role}</p>
-                        <p><strong>Fahrzeugklasse:</strong> ${carClass}</p>
-                        ${twitch ? `<p>Twitch: <a href="${twitch}" target="_blank">${twitch.replace("https://twitch.tv/", "@")}</a></p>` : ""}
-                      `;
-                      container.appendChild(card);
-                    });
-                  })
-                  .catch(err => {
-                    console.error("Fehler beim Laden der Fahrerdaten:", err);
-                    document.getElementById("members-container").innerHTML = "<p>Fahrerdaten konnten nicht geladen werden 😔</p>";
-                  });
-                </script>
-
+          <!-- Daten werden per JS eingefügt -->
         </tbody>
       </table>
     </div>
@@ -89,5 +54,44 @@
   <footer>
     <p>© 2025 Next Curve Performance | SimRacing Team</p>
   </footer>
+
+  <!-- Script zum Laden aus Google Sheets -->
+  <script>
+    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw"; // Google Sheet ID
+    const SHEET_NAME = "Fahrer"; // Tabname
+    const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    fetch(SHEET_URL)
+      .then(res => res.text())
+      .then(text => {
+        const json = JSON.parse(text.substr(47).slice(0, -2));
+        const rows = json.table.rows;
+        const tableBody = document.querySelector("#fahrerTable tbody");
+
+        rows.forEach(row => {
+          const name = row.c[0]?.v || "";
+          const role = row.c[1]?.v || "";
+          const carClass = row.c[2]?.v || "";
+          const twitch = row.c[3]?.v || "";
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${name}</td>
+            <td>${role}</td>
+            <td><span class="status ${carClass.toLowerCase()}">${carClass}</span></td>
+            <td>${twitch ? `<a href="${twitch}" target="_blank">${twitch.replace("https://twitch.tv/", "@")}</a>` : "-"}</td>
+          `;
+          tableBody.appendChild(tr);
+        });
+
+        if (!tableBody.hasChildNodes()) {
+          tableBody.innerHTML = `<tr><td colspan="4">Keine Fahrerdaten gefunden 😔</td></tr>`;
+        }
+      })
+      .catch(err => {
+        console.error("Fehler beim Laden der Fahrerdaten:", err);
+        document.querySelector("#fahrerTable tbody").innerHTML = `<tr><td colspan="4">Fehler beim Laden der Daten 😔</td></tr>`;
+      });
+  </script>
 </body>
 </html>
