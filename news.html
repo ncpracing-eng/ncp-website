@@ -123,35 +123,34 @@
       document.getElementById("footer").innerHTML = data;
     });
 
-  // === Google Sheet Verbindung ===
+ <script>
   const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
   const SHEET_NAME = "News";
   const NEWS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
   fetch(NEWS_URL)
     .then(res => res.text())
-    .then(text => {
-      const json = JSON.parse(text.substr(47).slice(0, -2));
-      let rows = json.table.rows;
-      const newsList = document.getElementById("newsList");
-      newsList.innerHTML = "";
+    .then(txt => {
+      const json = JSON.parse(txt.substr(47).slice(0, -2));
+      let rows = json.table.rows || [];
 
-      
-      const parsedNews = rows.map(row => {
-        if (!row.c) return null;
+      // --- Zeile 1 (Überschrift) ignorieren ---
+      if (rows.length > 0 && rows[0].c[0]?.v?.toLowerCase?.()?.includes("titel")) {
+        rows = rows.slice(1);
+      }
 
-        const title = row.c[0]?.v || "";
-        const dateRaw = row.c[1]?.v || "";
-        const textContent = row.c[2]?.v || "";
-        const author = row.c[3]?.v || "";
+      const news = rows.map(r => {
+        const title = r.c[0]?.v || "";
+        const rawDate = r.c[1]?.v || "";
+        const text = r.c[2]?.v || "";
+        const author = r.c[3]?.v || "";
 
-        // === Datum formatieren und konvertieren ===
+        // === Datum formatieren (Google liefert Date(YYYY,MM,DD)) ===
         let formattedDate = "";
         let dateValue = 0;
 
-        // Google-Date-Objekt (Date(2025,10,13))
-        if (typeof dateRaw === "string" && dateRaw.includes("Date")) {
-          const parts = dateRaw.match(/Date\((\d+),(\d+),(\d+)\)/);
+        if (typeof rawDate === "string" && rawDate.includes("Date(")) {
+          const parts = rawDate.match(/Date\((\d+),(\d+),(\d+)\)/);
           if (parts) {
             const year = parts[1];
             const month = String(Number(parts[2]) + 1).padStart(2, "0");
@@ -159,55 +158,41 @@
             formattedDate = `${day}.${month}.${year}`;
             dateValue = new Date(`${year}-${month}-${day}`).getTime();
           }
-        } 
-        // Fallback: normales Datum z. B. "14.11.2025"
-        else if (typeof dateRaw === "string") {
-          const parts = dateRaw.match(/(\d{1,2})[.\-/](\d{1,2})[.\-/](\d{2,4})/);
-          if (parts) {
-            const day = parts[1].padStart(2, "0");
-            const month = parts[2].padStart(2, "0");
-            const year = parts[3].length === 2 ? "20" + parts[3] : parts[3];
-            formattedDate = `${day}.${month}.${year}`;
-            dateValue = new Date(`${year}-${month}-${day}`).getTime();
-          }
         }
 
-        return { title, formattedDate, textContent, author, dateValue };
-      }).filter(n => n);
+        return { title, text, author, formattedDate, dateValue };
+      }).filter(n => n.title && n.text);
 
-      // === Alte News filtern (älter als 3 Monate) ===
-      const now = Date.now();
-      const threeMonths = 1000 * 60 * 60 * 24 * 90;
-      const recentNews = parsedNews.filter(n => now - n.dateValue <= threeMonths || !n.dateValue);
+      // === Nach Datum sortieren (neueste zuerst) ===
+      const latestNews = news.sort((a, b) => b.dateValue - a.dateValue).slice(0, 2);
 
-      // Nach Datum sortieren (neueste zuerst)
-      recentNews.sort((a, b) => b.dateValue - a.dateValue);
+      const container = document.getElementById("newsPreview");
+      container.innerHTML = "";
 
-      // === News-Karten erzeugen ===
-      if (recentNews.length === 0) {
-        newsList.innerHTML = "<p>Keine aktuellen News verfügbar.</p>";
+      if (latestNews.length === 0) {
+        container.innerHTML = "<p>Keine aktuellen News verfügbar.</p>";
         return;
       }
 
-      recentNews.forEach(n => {
-        const card = document.createElement("div");
-        card.classList.add("news-card");
-        card.innerHTML = `
+      latestNews.forEach(n => {
+        const div = document.createElement("div");
+        div.className = "news-item";
+        div.innerHTML = `
           <h3>${n.title}</h3>
-          <p>${n.textContent}</p>
+          <p>${n.text.length > 200 ? n.text.substring(0, 200) + "..." : n.text}</p>
           <div class="news-meta">
-            <span>📅 ${n.formattedDate || "Unbekannt"}</span>
-            <span>✍️ ${n.author || "NCP Team"}</span>
+            <span>📅 ${n.formattedDate}</span>
+            <span>✍️ ${n.author}</span>
           </div>
         `;
-        newsList.appendChild(card);
+        container.appendChild(div);
       });
     })
     .catch(err => {
       console.error("Fehler beim Laden der News:", err);
-      document.getElementById("newsList").innerHTML = "<p>⚠️ News konnten nicht geladen werden.</p>";
+      document.getElementById("newsPreview").innerHTML =
+        "<p>⚠️ Keine News verfügbar.</p>";
     });
 </script>
-
 </body>
 </html>
