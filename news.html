@@ -179,12 +179,13 @@
         return;
       }
 
-      recentNews.forEach(n => {
+        recentNews.forEach(n => {
         const card = document.createElement("div");
         card.classList.add("news-card");
+        const formattedText = n.text.replace(/\n/g, "<br>");
         card.innerHTML = `
           <h3>${n.title}</h3>
-          <p>${n.text}</p>
+          <p>${formattedText}</p>
           <div class="news-meta">
             <span>📅 ${n.formattedDate}</span>
             <span>✍️ ${n.author}</span>
