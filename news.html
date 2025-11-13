@@ -123,6 +123,7 @@
       document.getElementById("footer").innerHTML = data;
     });
 
+  
   const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
   const SHEET_NAME = "News";
   const NEWS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
@@ -138,13 +139,15 @@
         rows = rows.slice(1);
       }
 
+      const now = Date.now();
+      const threeMonths = 1000 * 60 * 60 * 24 * 90;
+
       const news = rows.map(r => {
         const title = r.c[0]?.v || "";
         const rawDate = r.c[1]?.v || "";
         const text = r.c[2]?.v || "";
         const author = r.c[3]?.v || "";
 
-        // === Datum formatieren (Google liefert Date(YYYY,MM,DD)) ===
         let formattedDate = "";
         let dateValue = 0;
 
@@ -160,37 +163,40 @@
         }
 
         return { title, text, author, formattedDate, dateValue };
-      }).filter(n => n.title && n.text);
+      }).filter(n => n.title && n.text && n.dateValue > 0);
 
-      // === Nach Datum sortieren (neueste zuerst) ===
-      const latestNews = news.sort((a, b) => b.dateValue - a.dateValue).slice(0, 2);
+      // === Alte News (älter als 3 Monate) ausblenden ===
+      const recentNews = news.filter(n => now - n.dateValue <= threeMonths);
 
-      const container = document.getElementById("newsPreview");
-      container.innerHTML = "";
+      // === Sortieren ===
+      recentNews.sort((a, b) => b.dateValue - a.dateValue);
 
-      if (latestNews.length === 0) {
-        container.innerHTML = "<p>Keine aktuellen News verfügbar.</p>";
+      const newsList = document.getElementById("newsList");
+      newsList.innerHTML = "";
+
+      if (recentNews.length === 0) {
+        newsList.innerHTML = "<p>Keine aktuellen News verfügbar.</p>";
         return;
       }
 
-      latestNews.forEach(n => {
-        const div = document.createElement("div");
-        div.className = "news-item";
-        div.innerHTML = `
+      recentNews.forEach(n => {
+        const card = document.createElement("div");
+        card.classList.add("news-card");
+        card.innerHTML = `
           <h3>${n.title}</h3>
-          <p>${n.text.length > 200 ? n.text.substring(0, 200) + "..." : n.text}</p>
+          <p>${n.text}</p>
           <div class="news-meta">
             <span>📅 ${n.formattedDate}</span>
             <span>✍️ ${n.author}</span>
           </div>
         `;
-        container.appendChild(div);
+        newsList.appendChild(card);
       });
     })
     .catch(err => {
       console.error("Fehler beim Laden der News:", err);
-      document.getElementById("newsPreview").innerHTML =
-        "<p>⚠️ Keine News verfügbar.</p>";
+      document.getElementById("newsList").innerHTML =
+        "<p>⚠️ News konnten nicht geladen werden.</p>";
     });
 </script>
 </body>
