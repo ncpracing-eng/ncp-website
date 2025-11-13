@@ -5,34 +5,108 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Next Curve Performance</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* === News Preview Stil === */
+    .news-preview {
+      background: #0f0f0f;
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .news-preview h2 {
+      color: #3cff00;
+      margin-bottom: 30px;
+      font-size: 2rem;
+    }
+
+    .news-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .news-item {
+      background: #1a1a1a;
+      border-left: 4px solid #3cff00;
+      border-radius: 10px;
+      padding: 20px 25px;
+      text-align: left;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+      transition: transform 0.2s ease, box-shadow 0.3s ease;
+    }
+
+    .news-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 5px 12px rgba(0,0,0,0.6);
+    }
+
+    .news-item h3 {
+      color: #3cff00;
+      margin-bottom: 10px;
+      font-size: 1.3rem;
+    }
+
+    .news-item p {
+      color: #eaeaea;
+      margin-bottom: 15px;
+    }
+
+    .news-meta {
+      font-size: 0.85rem;
+      color: #aaa;
+      display: flex;
+      justify-content: space-between;
+      border-top: 1px solid #333;
+      padding-top: 8px;
+    }
+
+    .news-link {
+      display: inline-block;
+      margin-top: 25px;
+      padding: 10px 20px;
+      background: linear-gradient(90deg, #3cff00, #004cff);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+
+    .news-link:hover {
+      background: linear-gradient(90deg, #2adb00, #0060ff);
+    }
+  </style>
 </head>
 <body>
   <div id="header"></div>
-<script>
-  fetch("header.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("header").innerHTML = data;
 
-      // active link hervorheben
-      const path = window.location.pathname.split("/").pop();
-      const links = document.querySelectorAll("nav a");
-      links.forEach(a => {
-        if (a.getAttribute("href") === path) {
-          a.classList.add("active");
-        }
+  <script>
+    // Header laden
+    fetch("header.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("header").innerHTML = data;
+
+        // active link hervorheben
+        const path = window.location.pathname.split("/").pop();
+        const links = document.querySelectorAll("nav a");
+        links.forEach(a => {
+          if (a.getAttribute("href") === path) {
+            a.classList.add("active");
+          }
+        });
       });
-    });
 
-  // Footer laden
-  fetch("footer.html")
-    .then(response => response.text())
-    .then(data => {
-      document.getElementById("footer").innerHTML = data;
-    });
-</script>
+    // Footer laden
+    fetch("footer.html")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("footer").innerHTML = data;
+      });
+  </script>
 
-
+  <!-- HERO -->
   <section class="hero">
     <div class="hero-content">
       <h2>SimRacing auf höchstem Niveau</h2>
@@ -41,6 +115,16 @@
     </div>
   </section>
 
+  <!-- 📰 NEWS PREVIEW -->
+  <section class="news-preview">
+    <h2>Aktuelle News</h2>
+    <div class="news-list" id="newsPreview">
+      <p>Lade die neuesten News...</p>
+    </div>
+    <a href="news.html" class="news-link">Alle News anzeigen</a>
+  </section>
+
+  <!-- ÜBER UNS -->
   <section class="about">
     <h2>Über uns</h2>
     <p>
@@ -53,6 +137,7 @@
     </p>
   </section>
 
+  <!-- FEATURE KARTEN -->
   <section class="features">
     <div class="feature-card">
       <h3>🏎️ Präzision</h3>
@@ -69,5 +154,71 @@
   </section>
 
   <div id="footer"></div>
+
+  <script>
+    // === News Vorschau (2 aktuellste) ===
+    const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+    const SHEET_NAME = "News";
+    const NEWS_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+
+    fetch(NEWS_URL)
+      .then(res => res.text())
+      .then(txt => {
+        const json = JSON.parse(txt.substr(47).slice(0, -2));
+        let rows = json.table.rows.slice(1); // Zeile 1 ignorieren
+
+        // News aufbereiten
+        const news = rows.map(r => {
+          if (!r.c) return null;
+          const title = r.c[0]?.v || "";
+          const dateRaw = r.c[1]?.v || "";
+          const text = r.c[2]?.v || "";
+          const author = r.c[3]?.v || "";
+
+          // Datum formatieren
+          let formattedDate = "";
+          let dateValue = 0;
+          if (dateRaw.includes("Date")) {
+            const parts = dateRaw.match(/Date\((\d+),(\d+),(\d+)\)/);
+            if (parts) {
+              const year = parts[1];
+              const month = String(Number(parts[2]) + 1).padStart(2, "0");
+              const day = String(parts[3]).padStart(2, "0");
+              formattedDate = `${day}.${month}.${year}`;
+              dateValue = new Date(`${year}-${month}-${day}`).getTime();
+            }
+          } else {
+            formattedDate = dateRaw;
+            dateValue = Date.parse(dateRaw) || 0;
+          }
+
+          return { title, text, formattedDate, author, dateValue };
+        }).filter(n => n);
+
+        // Nach Datum sortieren und nur die 2 neuesten anzeigen
+        const latestNews = news.sort((a, b) => b.dateValue - a.dateValue).slice(0, 2);
+
+        const container = document.getElementById("newsPreview");
+        container.innerHTML = "";
+
+        latestNews.forEach(n => {
+          const div = document.createElement("div");
+          div.className = "news-item";
+          div.innerHTML = `
+            <h3>${n.title}</h3>
+            <p>${n.text.length > 200 ? n.text.substring(0, 200) + "..." : n.text}</p>
+            <div class="news-meta">
+              <span>📅 ${n.formattedDate}</span>
+              <span>✍️ ${n.author}</span>
+            </div>
+          `;
+          container.appendChild(div);
+        });
+      })
+      .catch(err => {
+        console.error("Fehler beim Laden der News:", err);
+        document.getElementById("newsPreview").innerHTML = "<p>⚠️ Keine News verfügbar.</p>";
+      });
+  </script>
 </body>
 </html>
