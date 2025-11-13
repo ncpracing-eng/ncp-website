@@ -175,22 +175,37 @@
           const text = r.c[2]?.v || "";
           const author = r.c[3]?.v || "";
 
-          // Datum formatieren
+          // Datum robust formatieren
           let formattedDate = "";
           let dateValue = 0;
-          if (dateRaw.includes("Date")) {
-            const parts = dateRaw.match(/Date\((\d+),(\d+),(\d+)\)/);
-            if (parts) {
-              const year = parts[1];
-              const month = String(Number(parts[2]) + 1).padStart(2, "0");
-              const day = String(parts[3]).padStart(2, "0");
-              formattedDate = `${day}.${month}.${year}`;
-              dateValue = new Date(`${year}-${month}-${day}`).getTime();
+          
+          if (r.c[1]) {
+            const dateCell = r.c[1];
+          
+            if (typeof dateCell === "object" && dateCell.f) {
+              // Wenn das Datum bereits formatiert (z. B. "12.11.2025")
+              formattedDate = dateCell.f;
+              dateValue = Date.parse(dateCell.f.split(".").reverse().join("-"));
+            } else if (typeof dateCell.v === "string" && dateCell.v.includes("Date")) {
+              // Wenn es im gviz-Format wie "Date(2025,10,12)" kommt
+              const parts = dateCell.v.match(/Date\((\d+),(\d+),(\d+)\)/);
+              if (parts) {
+                const year = parts[1];
+                const month = String(Number(parts[2]) + 1).padStart(2, "0");
+                const day = String(parts[3]).padStart(2, "0");
+                formattedDate = `${day}.${month}.${year}`;
+                dateValue = new Date(`${year}-${month}-${day}`).getTime();
+              }
+            } else if (typeof dateCell.v === "string") {
+              // Falls es nur Text ist
+              formattedDate = dateCell.v;
+              dateValue = Date.parse(dateCell.v) || 0;
+            } else {
+              formattedDate = "";
+              dateValue = 0;
             }
-          } else {
-            formattedDate = dateRaw;
-            dateValue = Date.parse(dateRaw) || 0;
           }
+
 
           return { title, text, formattedDate, author, dateValue };
         }).filter(n => n);
