@@ -1,146 +1,129 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Streams | Next Curve Performance</title>
-<link rel="stylesheet" href="style.css" />
 <style>
-  body {
-    margin: 0;
-    font-family: "Poppins", sans-serif;
-    background: linear-gradient(180deg, #0a0a0a 0%, #101820 100%);
-    color: #e0e0e0;
+  /* === STREAM GRIDS 2er === */
+  .streams-grid {
+    display: grid;
+    gap: 25px;
   }
 
-  #header, #footer { width: 100%; }
-
-  .page-header {
-    text-align: center;
-    padding: 50px 20px 30px;
-    background: radial-gradient(circle at top, #0f2027, #203a43, #2c5364);
-    color: white;
+  .live-grid,
+  .offline-grid {
+    grid-template-columns: repeat(2, 1fr); /* immer 2 Spalten */
   }
-  .page-header h2 { font-size: 2em; margin-bottom: 10px; }
-  .page-header p { margin:0; }
 
-  .streams-section { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-  .streams-grid { display: grid; gap: 25px; grid-template-columns: repeat(2, 1fr); }
-
-  .stream-card {
-    border-radius: 14px;
-    overflow: hidden;
-    background: #1a1a1a;
-    transition: all 0.3s ease;
-    cursor: grab;
+  @media (max-width: 800px) {
+    .live-grid,
+    .offline-grid {
+      grid-template-columns: 1fr; /* auf kleinen Bildschirmen 1 Spalte */
+    }
   }
-  .stream-card:active { cursor: grabbing; }
-  .stream-card:hover { transform: scale(1.02); box-shadow: 0 0 20px #00bcd4; }
 
-  .stream-video iframe { width: 100%; height: 320px; border: none; }
+  /* === OFFLINE STREAM === */
+  .offline-box h4 {
+    margin: 5px 0 0;
+    font-size: 0.9em; /* echter Name kleiner */
+    color: #ccc;
+  }
 
-  .stream-info {
-    text-align: center;
-    padding: 10px;
-    background: #0e0e0e;
-    color: #00bcd4;
+  .offline-box .twitch-name {
+    font-size: 1em;
     font-weight: 600;
+    color: var(--ncp-accent);
+    margin-bottom: 3px;
+    display: block;
   }
-  .stream-info .twitch-name { font-size: 1.1em; }
-  .stream-info .real-name { font-size: 0.9em; color: #ccc; margin-top: 2px; }
 
-  .offline-box { display: block; position: relative; overflow: hidden; border-radius: 12px; background: #111; text-decoration: none; color: #fff; transition: all 0.3s ease; }
-  .offline-box:hover { transform: translateY(-3px); box-shadow: 0 0 12px #00bcd4; }
-  .offline-box img { width: 100%; opacity: 0.5; transition: opacity 0.3s ease; }
-  .offline-box:hover img { opacity: 0.7; }
-  .offline-overlay { position: absolute; top:0; left:0; right:0; bottom:0; display:flex; align-items:center; justify-content:center; font-weight:bold; font-size:1.1em; color:#00bcd4; background: linear-gradient(180deg, rgba(0,188,212,0.2), rgba(0,0,0,0.8)); text-transform: uppercase; }
+  /* LIVE STREAM INFO */
+  .stream-info h3 {
+    font-size: 0.9em; /* echter Name kleiner */
+    margin: 5px 0 0;
+    color: #ccc;
+  }
+
+  .stream-info .twitch-name {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--ncp-accent);
+    margin-bottom: 3px;
+    display: block;
+  }
+
+  /* Drag & Drop Styles */
+  .streams-grid.dragging .stream-card {
+    opacity: 0.5;
+  }
+
+  .stream-card.drag-over {
+    border: 2px dashed var(--ncp-accent);
+  }
 </style>
-</head>
-<body>
 
-<div id="header"></div>
-
-<section class="page-header">
-  <h2>🎥 Streams</h2>
-  <p>Alle Fahrer im Überblick – tausche die Kacheln nach deinem Geschmack!</p>
-</section>
-
-<section class="streams-section">
-  <div id="streams-grid" class="streams-grid"></div>
-</section>
-
-<div id="footer"></div>
-
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 <script>
-  // Header & Footer
-  fetch("header.html").then(r => r.text()).then(t => document.getElementById("header").innerHTML = t);
-  fetch("footer.html").then(r => r.text()).then(t => document.getElementById("footer").innerHTML = t);
-
   const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
   const SHEET_NAME = "Streamer";
   const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
-  const grid = document.getElementById("streams-grid");
-  const savedOrder = JSON.parse(localStorage.getItem("streamOrder") || "[]");
-
   fetch(SHEET_URL)
     .then(res => res.text())
     .then(text => {
-      const json = JSON.parse(text.substr(47).slice(0,-2));
+      const json = JSON.parse(text.substr(47).slice(0, -2));
       const rows = json.table.rows;
 
-      const streamers = rows.slice(1).map(r => ({
-        twitch: r.c[1]?.v?.trim() || "",
-        name: r.c[0]?.v || ""
-      })).filter(s => s.twitch);
+      rows.slice(1).forEach(row => {
+        const name = row.c[0]?.v || "";
+        const twitchUser = row.c[1]?.v?.trim() || "";
 
-      renderGrid(streamers);
+        if (!twitchUser) return;
+
+        const img = new Image();
+        img.src = `https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg`;
+
+        img.onload = () => addStream(name, twitchUser, true);
+        img.onerror = () => addStream(name, twitchUser, false);
+      });
+
+      // Drag & Drop initialisieren
+      ["live-streams", "offline-streams"].forEach(id => {
+        new Sortable(document.getElementById(id), {
+          animation: 150,
+          ghostClass: 'dragging',
+          swap: true,        // Aktiviert direktes Tauschen der Kacheln
+          swapClass: 'drag-over'
+        });
+      });
     })
     .catch(err => console.error("Fehler beim Laden der Stream-Daten:", err));
 
-  function renderGrid(streamers) {
-    let ordered = streamers.slice();
-    if (savedOrder.length) {
-      ordered.sort((a,b) => {
-        const iA = savedOrder.indexOf(a.twitch);
-        const iB = savedOrder.indexOf(b.twitch);
-        if (iA === -1) return 1;
-        if (iB === -1) return -1;
-        return iA - iB;
-      });
+  function addStream(name, twitchUser, isLive) {
+    const container = document.getElementById(isLive ? "live-streams" : "offline-streams");
+    const card = document.createElement("div");
+    card.classList.add("stream-card");
+
+    if (!isLive) card.classList.add("offline");
+
+    if (isLive) {
+      card.innerHTML = `
+        <div class="stream-video">
+          <iframe
+            src="https://player.twitch.tv/?channel=${twitchUser}&parent=${location.hostname}"
+            allow="autoplay; fullscreen"
+            frameborder="0">
+          </iframe>
+        </div>
+        <div class="stream-info">
+          <span class="twitch-name">@${twitchUser}</span>
+          <h3>${name}</h3>
+        </div>`;
+    } else {
+      card.innerHTML = `
+        <a href="https://twitch.tv/${twitchUser}" target="_blank" class="offline-box">
+          <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_${twitchUser}-320x180.jpg" alt="${name}">
+          <div class="offline-overlay">Offline</div>
+          <span class="twitch-name">@${twitchUser}</span>
+          <h4>${name}</h4>
+        </a>`;
     }
 
-    grid.innerHTML = "";
-    ordered.forEach(s => {
-      const card = document.createElement("div");
-      card.classList.add("stream-card");
-      card.dataset.user = s.twitch;
-
-      // Offline Vorschaubild von Twitch
-      card.innerHTML = `
-        <a href="https://twitch.tv/${s.twitch}" target="_blank" class="offline-box">
-          <img src="https://static-cdn.jtvnw.net/previews-ttv/live_user_${s.twitch}-320x180.jpg" alt="${s.name}">
-          <div class="offline-overlay">Offline</div>
-          <div class="stream-info">
-            <div class="twitch-name">${s.twitch}</div>
-            <div class="real-name">${s.name}</div>
-          </div>
-        </a>`;
-      grid.appendChild(card);
-    });
-
-    // Drag & Drop
-    new Sortable(grid, {
-      animation: 150,
-      swap: true,
-      swapClass: "highlight",
-      onEnd: () => {
-        const order = Array.from(grid.querySelectorAll(".stream-card")).map(c => c.dataset.user);
-        localStorage.setItem("streamOrder", JSON.stringify(order));
-      }
-    });
+    container.appendChild(card);
   }
 </script>
-</body>
-</html>
