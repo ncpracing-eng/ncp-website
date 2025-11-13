@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Streams | Next Curve Performance</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css" />
 <style>
   body {
     margin: 0;
@@ -34,23 +34,14 @@
     margin: 40px auto;
   }
 
-  .slot {
-    width: 100%;
-    min-height: 200px;
-    position: relative;
-  }
-
   .stream-card {
-    width: 100%;
     background: #111;
     border-radius: 12px;
     overflow: hidden;
     cursor: grab;
     transition: transform 0.3s, box-shadow 0.3s;
-    position: absolute; /* innerhalb des Slots positioniert */
   }
   .stream-card:active { cursor: grabbing; }
-
   .stream-card:hover {
     transform: scale(1.03);
     box-shadow: 0 0 15px #00bcd4;
@@ -84,7 +75,7 @@
 
 <section class="page-header">
   <h2>🎥 Streams</h2>
-  <p>Alle Fahrer im Überblick – verschiebe die Streams nach deinem Geschmack!</p>
+  <p>Alle Fahrer im Überblick – tausche die Kacheln nach deinem Geschmack!</p>
 </section>
 
 <section class="streams-section">
@@ -95,28 +86,36 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
 <script>
-  // Header und Footer laden
+  // Header & Footer laden
   fetch("header.html").then(r => r.text()).then(t => document.getElementById("header").innerHTML = t);
   fetch("footer.html").then(r => r.text()).then(t => document.getElementById("footer").innerHTML = t);
 
-  // Beispiel-Streamer
-  const streamers = [
-    { twitch: "Streamer1", name: "Max Schulz" },
-    { twitch: "Streamer2", name: "Anna Becker" },
-    { twitch: "Streamer3", name: "Tom Müller" },
-    { twitch: "Streamer4", name: "Lisa Schneider" },
-    { twitch: "Streamer5", name: "David Klein" },
-    { twitch: "Streamer6", name: "Julia Hofmann" }
-  ];
+  const SHEET_ID = "1ZweNs9pfLIpNidgOMhtSfazjgHvt1o084sFR-zmX8Pw";
+  const SHEET_NAME = "Streamer";
+  const SHEET_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
 
   const grid = document.getElementById("streams-grid");
   const savedOrder = JSON.parse(localStorage.getItem("streamOrder") || "[]");
 
-  function renderGrid() {
-    grid.innerHTML = "";
-    let ordered = streamers.slice();
+  // Google Sheet laden
+  fetch(SHEET_URL)
+    .then(res => res.text())
+    .then(text => {
+      const json = JSON.parse(text.substr(47).slice(0, -2));
+      const rows = json.table.rows;
 
-    // Reihenfolge wiederherstellen
+      const streamers = rows.slice(1).map(r => ({
+        twitch: r.c[1]?.v?.trim() || "",
+        name: r.c[0]?.v || ""
+      })).filter(s => s.twitch);
+
+      renderGrid(streamers);
+    })
+    .catch(err => console.error("Fehler beim Laden der Stream-Daten:", err));
+
+  function renderGrid(streamers) {
+    let ordered = streamers.slice();
+    // Reihenfolge aus LocalStorage wiederherstellen
     if (savedOrder.length) {
       ordered.sort((a,b) => {
         const iA = savedOrder.indexOf(a.twitch);
@@ -127,10 +126,8 @@
       });
     }
 
-    // Slots erstellen
+    grid.innerHTML = "";
     ordered.forEach(s => {
-      const slot = document.createElement("div");
-      slot.classList.add("slot");
       const card = document.createElement("div");
       card.classList.add("stream-card");
       card.dataset.user = s.twitch;
@@ -140,24 +137,20 @@
           <div class="twitch-name">${s.twitch}</div>
           <div class="real-name">${s.name}</div>
         </div>`;
-      slot.appendChild(card);
-      grid.appendChild(slot);
+      grid.appendChild(card);
+    });
+
+    // Drag & Drop aktivieren
+    new Sortable(grid, {
+      animation: 150,
+      swap: true,
+      swapClass: "highlight",
+      onEnd: () => {
+        const order = Array.from(grid.querySelectorAll(".stream-card")).map(c => c.dataset.user);
+        localStorage.setItem("streamOrder", JSON.stringify(order));
+      }
     });
   }
-
-  renderGrid();
-
-  // Drag & Drop zwischen Slots nur tauschen
-  new Sortable(grid, {
-    animation: 150,
-    swap: true, // Karten tauschen
-    swapClass: "highlight",
-    onEnd: () => {
-      const order = Array.from(grid.querySelectorAll(".stream-card")).map(c => c.dataset.user);
-      localStorage.setItem("streamOrder", JSON.stringify(order));
-    }
-  });
 </script>
-
 </body>
 </html>
